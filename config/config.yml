@@ -10,3 +10,4 @@ mongo:
   name: "testdb"
   user_collection: "users"
   bookmark_collection: "bookmarks"
+  file_collection: "files"

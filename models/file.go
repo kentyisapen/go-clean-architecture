@@ -2,7 +2,7 @@ package models
 
 type File struct {
 	ID       string
-	Filename string
+	Name     string
 	UserID   string
 	FolderID string
 }

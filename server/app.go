@@ -15,6 +15,7 @@ import (
 
 	"github.com/kentyisapen/go-clean-architecture/auth"
 	"github.com/kentyisapen/go-clean-architecture/bookmark"
+	"github.com/kentyisapen/go-clean-architecture/file"
 
 	authhttp "github.com/kentyisapen/go-clean-architecture/auth/delivery/http"
 	authmongo "github.com/kentyisapen/go-clean-architecture/auth/repository/mongo"
@@ -22,6 +23,9 @@ import (
 	bmhttp "github.com/kentyisapen/go-clean-architecture/bookmark/delivery/http"
 	bmmongo "github.com/kentyisapen/go-clean-architecture/bookmark/repository/mongo"
 	bmusecase "github.com/kentyisapen/go-clean-architecture/bookmark/usecase"
+	fhttp "github.com/kentyisapen/go-clean-architecture/file/delivery/http"
+	fmongo "github.com/kentyisapen/go-clean-architecture/file/repository/mongo"
+	fusecase "github.com/kentyisapen/go-clean-architecture/file/usecase"
 )
 
 type App struct {
@@ -29,6 +33,7 @@ type App struct {
 
 	bookmarkUC bookmark.UseCase
 	authUC     auth.UseCase
+	fileUC     file.UseCase
 }
 
 func NewApp() *App {
@@ -36,6 +41,7 @@ func NewApp() *App {
 
 	userRepo := authmongo.NewUserRepository(db, viper.GetString("mongo.user_collection"))
 	bookmarkRepo := bmmongo.NewBookmarkRepository(db, viper.GetString("mongo.bookmark_collection"))
+	fileRepo := fmongo.NewFileRepository(db, viper.GetString("mongo.file_collection"))
 
 	return &App{
 		bookmarkUC: bmusecase.NewBookmarkUseCase(bookmarkRepo),
@@ -44,6 +50,9 @@ func NewApp() *App {
 			viper.GetString("auth.hash_salt"),
 			[]byte(viper.GetString("auth.signing_key")),
 			viper.GetDuration("auth.token_ttl"),
+		),
+		fileUC: fusecase.NewFileUseCase(
+			fileRepo,
 		),
 	}
 }
@@ -65,6 +74,7 @@ func (a *App) Run(port string) error {
 	api := router.Group("/api", authMiddleware)
 
 	bmhttp.RegisterHTTPEndpoints(api, a.bookmarkUC)
+	fhttp.RegisterHTTPEndpoints(api, a.fileUC)
 
 	// HTTP Server
 	a.httpServer = &http.Server{
