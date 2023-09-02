@@ -54,3 +54,28 @@ func (h *Handler) Create(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+type GetResponse struct {
+	ID       string `json:"id"`
+	FolderID string `json:"folder_id"`
+	UserId   string `json:"user_id"`
+	Name     string `json:"name"`
+}
+
+func (h *Handler) Get(c *gin.Context) {
+	id := c.Param("id")
+	user := c.MustGet(auth.CtxUserKey).(*models.User)
+
+	file, err := h.useCase.GetFile(c.Request.Context(), user, id)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}
+
+	c.JSON(http.StatusOK, &GetResponse{
+		ID:       file.ID,
+		FolderID: file.FolderID,
+		UserId:   file.UserID,
+		Name:     file.Name,
+	})
+}

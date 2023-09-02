@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/kentyisapen/go-clean-architecture/models"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -29,7 +30,7 @@ func NewFileRepository(db *mongo.Database, collection string) *FileRepository {
 func (r FileRepository) CreateFile(ctx context.Context, user *models.User, fm *models.File) error {
 	fm.UserID = user.ID
 
-	model := toModel(fm)
+	model := toMongoFile(fm)
 
 	res, err := r.db.InsertOne(ctx, model)
 	if err != nil {
@@ -41,7 +42,20 @@ func (r FileRepository) CreateFile(ctx context.Context, user *models.User, fm *m
 	return nil
 }
 
-func toModel(f *models.File) *File {
+func (r FileRepository) GetFile(ctx context.Context, user *models.User, id string) (*models.File, error) {
+	file := new(File)
+	err := r.db.FindOne(ctx, bson.M{
+		"id": id,
+	}).Decode(file)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return toModel(file), nil
+}
+
+func toMongoFile(f *models.File) *File {
 	uid, _ := primitive.ObjectIDFromHex(f.UserID)
 	fid, _ := primitive.ObjectIDFromHex(f.FolderID) // Errが起きたらNilObjectID
 
@@ -49,5 +63,18 @@ func toModel(f *models.File) *File {
 		UserId:   uid,
 		FolderId: fid,
 		Name:     f.Name,
+	}
+}
+
+func toModel(f *File) *models.File {
+	id := f.ID.Hex()
+	uid := f.UserId.Hex()
+	fid := f.FolderId.Hex() // Errが起きたらNilObjectID
+
+	return &models.File{
+		ID:       id,
+		Name:     f.Name,
+		UserID:   uid,
+		FolderID: fid,
 	}
 }

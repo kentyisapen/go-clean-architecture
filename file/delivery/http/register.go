@@ -8,8 +8,9 @@ import (
 func RegisterHTTPEndpoints(router *gin.RouterGroup, uc file.UseCase) {
 	h := NewHandler(uc)
 
-	bookmarks := router.Group("/files")
+	files := router.Group("/files")
 	{
-		bookmarks.POST("", h.Create)
+		files.POST("", h.Create)
+		files.GET("/:id", h.Get)
 	}
 }

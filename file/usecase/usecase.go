@@ -42,3 +42,7 @@ func (f FileUseCase) CreateFile(ctx context.Context, user *models.User, name str
 
 	return f.fileRepo.CreateFile(ctx, user, fm)
 }
+
+func (f FileUseCase) GetFile(ctx context.Context, user *models.User, id string) (*models.File, error) {
+	return f.fileRepo.GetFile(ctx, user, id)
+}
