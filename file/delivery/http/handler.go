@@ -79,3 +79,22 @@ func (h *Handler) Get(c *gin.Context) {
 		Name:     file.Name,
 	})
 }
+
+type IndexResponse struct {
+	Files []*models.File `json:"files"`
+}
+
+func (h *Handler) Index(c *gin.Context) {
+	user := c.MustGet(auth.CtxUserKey).(*models.User)
+
+	files, err := h.useCase.GetFiles(c.Request.Context(), user)
+
+	if err != nil {
+
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}
+
+	c.JSON(http.StatusOK, &IndexResponse{
+		Files: files,
+	})
+}

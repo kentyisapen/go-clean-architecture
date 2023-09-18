@@ -12,5 +12,6 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, uc file.UseCase) {
 	{
 		files.POST("", h.Create)
 		files.GET("/:id", h.Get)
+		files.GET("", h.Index)
 	}
 }

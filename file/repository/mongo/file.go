@@ -2,7 +2,6 @@ package mongo
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/kentyisapen/go-clean-architecture/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -34,7 +33,6 @@ func (r FileRepository) CreateFile(ctx context.Context, user *models.User, fm *m
 
 	res, err := r.db.InsertOne(ctx, model)
 	if err != nil {
-		fmt.Println("konohendesukane", err)
 		return err
 	}
 
@@ -53,6 +51,30 @@ func (r FileRepository) GetFile(ctx context.Context, user *models.User, id strin
 	}
 
 	return toModel(file), nil
+}
+
+func (r FileRepository) GetFiles(ctx context.Context, user *models.User) ([]*models.File, error) {
+	var files []*models.File
+
+	cursor, err := r.db.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		file := new(File)
+		if err := cursor.Decode(file); err != nil {
+			return nil, err
+		}
+		files = append(files, toModel(file))
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return files, nil
 }
 
 func toMongoFile(f *models.File) *File {
