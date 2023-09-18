@@ -14,6 +14,7 @@ type File struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`
 	FolderID string `json:"folder_id"`
+	UserId   string `json:"user_id"`
 }
 
 type Handler struct {
@@ -81,7 +82,7 @@ func (h *Handler) Get(c *gin.Context) {
 }
 
 type IndexResponse struct {
-	Files []*models.File `json:"files"`
+	Files []*File `json:"files"`
 }
 
 func (h *Handler) Index(c *gin.Context) {
@@ -95,6 +96,25 @@ func (h *Handler) Index(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, &IndexResponse{
-		Files: files,
+		Files: toFiles(files),
 	})
+}
+
+func toFiles(fs []*models.File) []*File {
+	out := make([]*File, len(fs))
+
+	for i, f := range fs {
+		out[i] = toFile(f)
+	}
+
+	return out
+}
+
+func toFile(file *models.File) *File {
+	return &File{
+		ID:       file.ID,
+		Name:     file.Name,
+		FolderID: file.FolderID,
+		UserId:   file.UserID,
+	}
 }
